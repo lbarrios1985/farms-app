@@ -6,7 +6,7 @@ Fullstack application for farm management with React, Node.js, and TypeScript. T
 
 - Farm management (CRUD operations)
 - Animal management per farm (CRUD operations)
-- Real-time notifications via Azure Service Bus
+- Real-time notifications (console-based for development, Azure Service Bus for production)
 - TypeScript for type safety
 - Modern UI with Tailwind CSS
 - Responsive design
@@ -24,7 +24,7 @@ Fullstack application for farm management with React, Node.js, and TypeScript. T
 - Node.js with Express
 - TypeScript
 - MongoDB (via Azure Cosmos DB)
-- Azure Service Bus for notifications
+- Notification system (console-based for development, Azure Service Bus ready for production)
 
 ### Infrastructure
 - Azure Cloud Services
@@ -34,10 +34,12 @@ Fullstack application for farm management with React, Node.js, and TypeScript. T
 
 - Node.js >= 16.x
 - npm >= 8.x
+- MongoDB database (local or Atlas)
+
+#### Optional for Production
 - Azure account with:
   - Cosmos DB instance
   - Service Bus namespace
-- MongoDB database
 
 ## Local Development
 
@@ -57,8 +59,11 @@ Fullstack application for farm management with React, Node.js, and TypeScript. T
    ```env
    PORT=3000
    MONGODB_URI=your_mongodb_connection_string
-   AZURE_SERVICE_BUS_CONNECTION_STRING=your_service_bus_connection_string
+   # Azure Service Bus is optional for development
+   # AZURE_SERVICE_BUS_CONNECTION_STRING=your_service_bus_connection_string
    ```
+
+   Note: For development, the notification system will log messages to the console instead of using Azure Service Bus.
 
 4. Start the development server:
    ```bash
