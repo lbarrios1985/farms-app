@@ -1,5 +1,6 @@
-import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { api } from '../services/api';
 import { Farm } from '../types';
 
@@ -8,122 +9,223 @@ interface FarmFormProps {
   onClose: () => void;
 }
 
-interface FarmFormData {
-  name: string;
-  location: string;
-  size: number;
-  productionType: string;
-}
+const PRODUCTION_TYPES = [
+  { id: 'dairy', label: 'Dairy' },
+  { id: 'meat', label: 'Meat' },
+  { id: 'wool', label: 'Wool' },
+  { id: 'eggs', label: 'Eggs' },
+  { id: 'breeding', label: 'Breeding' },
+] as const;
 
 export function FarmForm({ farm, onClose }: FarmFormProps) {
-  const queryClient = useQueryClient();
-  const { register, handleSubmit, formState: { errors } } = useForm<FarmFormData>({
-    defaultValues: farm ? {
+  const [formData, setFormData] = useState<Omit<Farm, '_id' | 'createdAt' | 'updatedAt'>>(
+    farm ? {
       name: farm.name,
       location: farm.location,
       size: farm.size,
-      productionType: farm.productionType.join(', '),
-    } : undefined,
-  });
+      productionType: farm.productionType,
+    } : {
+      name: '',
+      location: '',
+      size: 0,
+      productionType: [],
+    }
+  );
+
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (data: FarmFormData) => {
-      const farmData = {
-        ...data,
-        productionType: data.productionType.split(',').map(type => type.trim()),
-      };
-      
-      return farm
-        ? api.updateFarm(farm._id, farmData)
-        : api.createFarm(farmData);
-    },
+    mutationFn: (data: Omit<Farm, '_id' | 'createdAt' | 'updatedAt'>) =>
+      farm ? api.updateFarm(farm._id, data) : api.createFarm(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['farms'] });
+      toast.success(farm ? 'Farm updated successfully' : 'Farm created successfully');
       onClose();
     },
+    onError: () => {
+      toast.error(farm ? 'Failed to update farm' : 'Failed to create farm');
+    }
   });
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate(formData);
+  };
+
+  const handleProductionTypeChange = (type: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      productionType: prev.productionType?.includes(type)
+        ? prev.productionType.filter((t) => t !== type)
+        : [...(prev.productionType || []), type],
+    }));
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">
-          {farm ? 'Edit Farm' : 'Create Farm'}
-        </h2>
-        
-        <form onSubmit={handleSubmit((data) => mutation.mutate(data))}>
-          <div className="space-y-4">
+    <div className="fixed inset-0 bg-gray-500/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div 
+        className="
+          bg-white rounded-xl shadow-2xl w-full max-w-md
+          transform transition-all duration-300
+          scale-95 opacity-0 animate-modal-enter
+        "
+      >
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+          <h2 className="text-xl font-semibold text-gray-900">
+            {farm ? 'Edit Farm' : 'New Farm'}
+          </h2>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          <div className="space-y-6">
+            {/* Name Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Name
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Farm Name
               </label>
               <input
-                {...register('name', { required: 'Name is required' })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                type="text"
+                id="name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
+                className="
+                  mt-1 block w-full rounded-lg border-gray-300 
+                  shadow-sm focus:border-indigo-500 focus:ring-indigo-500
+                  text-sm transition-colors duration-200
+                  hover:border-gray-400
+                "
+                placeholder="Enter farm name"
+                required
               />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-              )}
             </div>
 
+            {/* Location Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="location"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Location
               </label>
               <input
-                {...register('location', { required: 'Location is required' })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                type="text"
+                id="location"
+                value={formData.location}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, location: e.target.value }))
+                }
+                className="
+                  mt-1 block w-full rounded-md border-gray-300
+                  shadow-sm focus:border-indigo-500 focus:ring-indigo-500
+                  text-sm
+                "
+                placeholder="Enter farm location"
+                required
               />
-              {errors.location && (
-                <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
-              )}
             </div>
 
+            {/* Size Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="size"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Size (hectares)
               </label>
               <input
                 type="number"
-                {...register('size', {
-                  required: 'Size is required',
-                  min: { value: 0, message: 'Size must be positive' },
-                })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                id="size"
+                value={formData.size}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    size: parseFloat(e.target.value),
+                  }))
+                }
+                className="
+                  mt-1 block w-full rounded-md border-gray-300
+                  shadow-sm focus:border-indigo-500 focus:ring-indigo-500
+                  text-sm
+                "
+                required
+                min="0"
+                step="0.1"
+                placeholder="0.0"
               />
-              {errors.size && (
-                <p className="mt-1 text-sm text-red-600">{errors.size.message}</p>
-              )}
             </div>
 
+            {/* Production Types */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Production Types (comma-separated)
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Production Types
               </label>
-              <input
-                {...register('productionType', { required: 'Production types are required' })}
-                placeholder="dairy, crops, livestock"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-              {errors.productionType && (
-                <p className="mt-1 text-sm text-red-600">{errors.productionType.message}</p>
-              )}
+              <div className="grid grid-cols-2 gap-3">
+                {PRODUCTION_TYPES.map(({ id, label }) => (
+                  <label
+                    key={id}
+                    className="
+                      relative flex items-start p-3 cursor-pointer
+                      hover:bg-indigo-50 rounded-lg
+                      transition-all duration-200 ease-in-out
+                      border border-transparent hover:border-indigo-200
+                    "
+                  >
+                    <div className="min-w-0 flex-1 text-sm">
+                      <div className="font-medium text-gray-700">{label}</div>
+                    </div>
+                    <div className="ml-3 flex items-center h-5">
+                      <input
+                        type="checkbox"
+                        checked={formData.productionType?.includes(id)}
+                        onChange={() => handleProductionTypeChange(id)}
+                        className="
+                          h-5 w-5 rounded border-gray-300 text-indigo-600
+                          focus:ring-indigo-500 transition-colors duration-200
+                          hover:border-indigo-500
+                        "
+                      />
+                    </div>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end gap-3">
+          {/* Footer */}
+          <div className="mt-8 flex items-center justify-end space-x-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="
+                inline-flex justify-center rounded-lg border border-gray-300
+                bg-white px-5 py-2.5 text-sm font-medium text-gray-700
+                shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2
+                focus:ring-gray-400 focus:ring-offset-2
+                transition-all duration-200 ease-in-out
+                hover:text-gray-900 hover:border-gray-400
+              "
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-              disabled={mutation.isPending}
+              className="
+                inline-flex justify-center rounded-lg border border-transparent
+                bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white
+                shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2
+                focus:ring-indigo-500 focus:ring-offset-2
+                transition-all duration-200 ease-in-out
+                transform hover:scale-105
+              "
             >
-              {mutation.isPending ? 'Saving...' : 'Save'}
+              {farm ? 'Save Changes' : 'Create Farm'}
             </button>
           </div>
         </form>
