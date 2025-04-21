@@ -23,7 +23,14 @@ export default {
       borderWidth: {
         '3': '3px',
       },
+      fontFamily: {
+        sans: ['system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms')({
+      strategy: 'class',
+    }),
+  ],
 }

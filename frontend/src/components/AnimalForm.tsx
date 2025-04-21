@@ -93,12 +93,7 @@ export function AnimalForm({ animal, farmId, onClose }: AnimalFormProps) {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, name: e.target.value }))
                 }
-                className="
-                  mt-1 block w-full rounded-lg border-gray-300
-                  shadow-sm focus:border-indigo-500 focus:ring-indigo-500
-                  text-sm transition-colors duration-200
-                  hover:border-gray-400
-                "
+                className="form-input block w-full px-3 py-2 mt-1 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm"
                 placeholder="Enter animal name"
                 required
               />
@@ -120,11 +115,7 @@ export function AnimalForm({ animal, farmId, onClose }: AnimalFormProps) {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, species: e.target.value }))
                   }
-                  className="
-                    mt-1 block w-full rounded-md border-gray-300
-                    shadow-sm focus:border-indigo-500 focus:ring-indigo-500
-                    text-sm
-                  "
+                  className="form-input block w-full px-3 py-2 mt-1 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm"
                   placeholder="e.g. Cow"
                   required
                 />
@@ -144,11 +135,7 @@ export function AnimalForm({ animal, farmId, onClose }: AnimalFormProps) {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, breed: e.target.value }))
                   }
-                  className="
-                    mt-1 block w-full rounded-md border-gray-300
-                    shadow-sm focus:border-indigo-500 focus:ring-indigo-500
-                    text-sm
-                  "
+                  className="form-input block w-full px-3 py-2 mt-1 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm"
                   placeholder="e.g. Holstein"
                   required
                 />
@@ -170,12 +157,7 @@ export function AnimalForm({ animal, farmId, onClose }: AnimalFormProps) {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, birthDate: e.target.value }))
                 }
-                className="
-                  mt-1 block w-full rounded-lg border-gray-300
-                  shadow-sm focus:border-indigo-500 focus:ring-indigo-500
-                  text-sm transition-colors duration-200
-                  hover:border-gray-400
-                "
+                className="form-input block w-full px-3 py-2 mt-1 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm"
                 required
                 max={new Date().toISOString().split('T')[0]}
               />
